@@ -1,34 +1,73 @@
-import os
-from flask import Flask, request, jsonify, send_file
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام التشخيص الطبي</title>
+    <style>
+        body {
+            font-family: Tahoma, Arial;
+            direction: rtl;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .container {
+            margin: 50px auto;
+            padding: 30px;
+            width: 400px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🩺 نظام التشخيص الطبي</h2>
+        <form id="symptomForm">
+            <label for="symptoms">أدخل الأعراض:</label>
+            <input type="text" id="symptoms" name="symptoms" placeholder="مثال: صداع، حمى، كحة">
+            <button type="submit">تشخيص</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
 
-app = Flask(__name__)
+    <script>
+        document.getElementById("symptomForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const symptoms = document.getElementById("symptoms").value;
 
-# الصفحة الرئيسية: تعرض index.html الموجود بجانب app.py
-@app.route("/")
-def home():
-    return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
+            let response = await fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ symptoms: symptoms })
+            });
 
-# API للتجربة
-@app.route("/predict", methods=["POST"])
-def predict():
-    data = request.json
-    symptoms = data.get("symptoms", "").lower()
-
-    if "fever" in symptoms and "cough" in symptoms:
-        diagnosis = "Flu"
-        recommendation = "Rest + Flu Medication"
-    elif "headache" in symptoms:
-        diagnosis = "Migraine"
-        recommendation = "Painkillers + Rest"
-    else:
-        diagnosis = "Unknown"
-        recommendation = "Consult a doctor"
-
-    return jsonify({
-        "diagnosis": diagnosis,
-        "recommendation": recommendation
-    })
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+            let data = await response.json();
+            document.getElementById("result").innerText = 
+                "🧾 التشخيص: " + data.diagnosis + "\n💊 التوصية: " + data.recommendation;
+        });
+    </script>
+</body>
+</html>
