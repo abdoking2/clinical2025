@@ -1,34 +1,31 @@
 import os
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__)
 
-# الصفحة الرئيسية: تعرض index.html الموجود بجانب app.py
+# إرسال ملف index.html مباشرة
 @app.route("/")
 def home():
-    return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
+    return send_from_directory(os.getcwd(), "index.html")
 
-# API للتجربة
+
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
     symptoms = data.get("symptoms", "").lower()
 
-    if "fever" in symptoms and "cough" in symptoms:
-        diagnosis = "Flu"
-        recommendation = "Rest + Flu Medication"
-    elif "headache" in symptoms:
-        diagnosis = "Migraine"
-        recommendation = "Painkillers + Rest"
+    if "حمى" in symptoms and "سعال" in symptoms:
+        diagnosis = "انفلونزا"
+        recommendation = "الراحة + أدوية الانفلونزا"
+    elif "صداع" in symptoms:
+        diagnosis = "صداع نصفي"
+        recommendation = "مسكنات + راحة"
     else:
-        diagnosis = "Unknown"
-        recommendation = "Consult a doctor"
+        diagnosis = "غير معروف"
+        recommendation = "استشر الطبيب"
 
-    return jsonify({
-        "diagnosis": diagnosis,
-        "recommendation": recommendation
-    })
+    return jsonify({"diagnosis": diagnosis, "recommendation": recommendation})
+
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
